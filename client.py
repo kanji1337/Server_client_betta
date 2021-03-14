@@ -67,7 +67,7 @@ def gui_client():
         otstupi = np.arange(0.03, 0.73, 0.04)
         otstupi.tolist()
         for i in range(int_of_send):
-            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.005+otstupi[int_of_send]))
+            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.03+otstupi[int_of_send]))
         client.send(message.encode("utf-8"))
         pole_vvoda.delete("1.0", END)
 
