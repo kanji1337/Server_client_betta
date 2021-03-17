@@ -2,30 +2,34 @@ import socket
 from tkinter import*
 from threading import Thread
 import numpy as np
+from tkinter import messagebox as mess
 
-port = 4912
+port = 4911
 client_data = []
-
-def polzvtl():
-    global client
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(("192.168.56.1", port))
-    chat = True
-
-    while chat:
-        data = client.recv(1024)
-        data_from_server = data.decode("utf-8")
-        client_data.append(data_from_server)
-
-        if not data:
-            client.close()
-            print("Server closed")
 
 def gui_client():
     gui = Tk()
-
     gui.geometry("1200x900")
     gui["bg"] = "gray6"
+
+    def polzvtl():
+        global client
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect(("192.168.56.1", port))
+        chat = True
+
+        while chat:
+            data = client.recv(1024)
+            data_from_server = data.decode("utf-8")
+            client_data.append(data_from_server)
+            index = len(client_data)
+
+            otstupi = np.arange(0.03, 0.73, 0.04)
+            otstupi.tolist()
+            for i in range(index):
+                Label(gui, text=data_from_server, bg="gray6", fg="yellow").place(relx=0.02, rely=(
+                            0.03 + otstupi[index]))
+
     gui.title("You is client and connected to {}")
 
     LabelFrame(gui, text = "Отправлять от сюда", highlightthickness=0, bg = "gray15", width = 1200, height = 400,).place(relx = 0, rely = 0.77)
@@ -57,8 +61,7 @@ def gui_client():
             with open("data/history.txt", "tw", encoding= "utf-8") as file:
                 file.write(f"{line}")
             client_message = client_data[-1]
-            somebody_message = client_data[-2]
-            clients_message = f"{clients_nickname} :: {client_message}\n{somebody_message}"
+            clients_message = f"{clients_nickname} :: {client_message}"
             Thread(target= send_mes, args =(index_history,clients_message,)).start()
         else:
             pole_vvoda.delete("1.0", END)
@@ -66,8 +69,8 @@ def gui_client():
     def send_mes(int_of_send,message,):
         otstupi = np.arange(0.03, 0.73, 0.04)
         otstupi.tolist()
-        for i in range(int_of_send):
-            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.03+otstupi[int_of_send]))
+
+        Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.03+otstupi[int_of_send]))
         client.send(message.encode("utf-8"))
         pole_vvoda.delete("1.0", END)
 

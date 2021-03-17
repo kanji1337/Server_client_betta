@@ -1,3 +1,3 @@
-username : kanji1 
-password : ds 
-email: adsda
+username : sadsa 
+password : dsadsadsa 
+email: dasdsa

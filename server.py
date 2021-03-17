@@ -2,29 +2,41 @@ import socket
 from tkinter import*
 from threading import Thread
 import numpy as np
+from tkinter import messagebox as mess
 
-port = 4912
+port = 4911
 server_addres = (socket.gethostbyname(socket.gethostname()), port)
 users_sockets = []
 server_data = []
 
-def serv():
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((socket.gethostname(), port))
-    server.listen(5)
-    chat = True
-    while chat:
-        user, addres = server.accept()                                      #Где user, это socket пользователя
-        user.send(f"Ты присоединился из {addres} ".encode("utf-8"))
-        users_sockets.append(user)
-        while chat:
-            data = user.recv(1024)
-            data.decode("utf-8")
-            server_data.append(data)
+otstupi = np.arange(0.03, 0.73, 0.04)  # создание массива numpy, т.к python list не умеет создавать float массивы
+otstupi.tolist()
 
 def gui_server():
     gui = Tk()
     gui.geometry("1200x900")
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((socket.gethostname(), port))
+    def serv():
+        server.listen(5)
+        chat = True
+        while chat:
+            user, addres = server.accept()                     # Где user, это socket пользователя
+            user.send(f"Ты присоединился из {addres} ".encode("utf-8"))
+            users_sockets.append(user)
+            while chat:
+                data = user.recv(1024)
+                All_Data = data.decode("utf-8")
+                server_data.append(All_Data)
+                index = len(server_data)
+                for i in range(index):
+                    Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
+                            0.03 + otstupi[index]))
+    def on_closing():
+        if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет приостановлена"):
+            server.close()
+            gui.destroy()
+
     gui["bg"] = "gray6"
     gui.title("Your server started")
 
@@ -45,6 +57,7 @@ def gui_server():
     pole_vvoda = Text(gui, wrap = "word", bg = "snow", relief = "solid", width = 75, height = 2, font = ("Times New Roman", "16"))
     pole_vvoda.place(relx = 0.03, rely = 0.85)
 
+
     def send_ur_messages_to_you():
         line = pole_vvoda.get("1.0", END)
         server_data.append(line)
@@ -59,9 +72,7 @@ def gui_server():
         else:
             pole_vvoda.delete("1.0", END)
 
-    def send_mes(int_of_send,message,):
-        otstupi = np.arange(0.03, 0.73, 0.04)                           # создание массива numpy, т.к python list не умеет создавать float массивы
-        otstupi.tolist()                                                # преобразование массива numpy в list python
+    def send_mes(int_of_send,message,):                                           # преобразование массива numpy в list python
         for i in range(int_of_send):                                   # HARD brain make it long time ради этой строчки созданы предыдущие 15
             Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.005+otstupi[int_of_send]))     # После получения строки, номер ее этерации через len(your_history) передается в функцию send_mes
 
@@ -77,9 +88,8 @@ def gui_server():
 
     Thread(target=serv).start()
 
+    gui.protocol("WM_DELETE_WINDOW", on_closing)
     gui.mainloop()
-
-
 
 
 
