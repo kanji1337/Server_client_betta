@@ -9,7 +9,7 @@ server_addres = (socket.gethostbyname(socket.gethostname()), port)
 users_sockets = []
 server_data = []
 
-otstupi = np.arange(0.03, 0.73, 0.04)  # создание массива numpy, т.к python list не умеет создавать float массивы
+otstupi = np.arange(0.03, 0.68, 0.04)  # создание массива numpy, т.к python list не умеет создавать float массивы
 otstupi.tolist()
 
 def gui_server():
@@ -31,7 +31,10 @@ def gui_server():
                 index = len(server_data)
                 for i in range(index):
                     Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
-                            0.03 + otstupi[index]))
+                            0.02 + otstupi[index]))
+                for user in users_sockets:
+                    user.send(All_Data.encode("utf-8"))
+
     def on_closing():
         if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет приостановлена"):
             server.close()
@@ -74,14 +77,13 @@ def gui_server():
 
     def send_mes(int_of_send,message,):                                           # преобразование массива numpy в list python
         for i in range(int_of_send):                                   # HARD brain make it long time ради этой строчки созданы предыдущие 15
-            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.005+otstupi[int_of_send]))     # После получения строки, номер ее этерации через len(your_history) передается в функцию send_mes
+            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.02+otstupi[int_of_send]))     # После получения строки, номер ее этерации через len(your_history) передается в функцию send_mes
 
         for user in users_sockets:                                      # каждому сокету массива отправляется сообщение номер этерации поступает в функцию и создается новый Label опущенный на 0.03 вниз при помощи вызова массива по индексу этерации, вот зачем такой странный цикл
             user.send(message.encode("utf-8"))
 
         pole_vvoda.delete("1.0", END)
 
-    Thread(target=send_ur_messages_to_you).start()
 
     Button(gui, command=send_ur_messages_to_you, text="Отправить", bg="orange red",
            width=30, height=6).place(relx=0.76, rely=0.82)

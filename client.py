@@ -6,6 +6,9 @@ from tkinter import messagebox as mess
 
 port = 4911
 client_data = []
+clients_nickname = []
+otstupi = np.arange(0.03, 0.68, 0.04)
+otstupi.tolist()
 
 def gui_client():
     gui = Tk()
@@ -17,18 +20,18 @@ def gui_client():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect(("192.168.56.1", port))
         chat = True
+        info_about_you = f"К нам присоеденился новый участник {clients_nickname[-1]}"
 
         while chat:
             data = client.recv(1024)
             data_from_server = data.decode("utf-8")
             client_data.append(data_from_server)
             index = len(client_data)
-
-            otstupi = np.arange(0.03, 0.73, 0.04)
-            otstupi.tolist()
             for i in range(index):
+                if index == 1:
+                    client.send(info_about_you.encode("utf-8"))
                 Label(gui, text=data_from_server, bg="gray6", fg="yellow").place(relx=0.02, rely=(
-                            0.03 + otstupi[index]))
+                            0.02 + otstupi[index]))
 
     gui.title("You is client and connected to {}")
 
@@ -42,9 +45,10 @@ def gui_client():
         nickname = line[0][11:-1]
         return nickname
 
-    clients_nickname = add_users_nicknames()
+    client_nickname = add_users_nicknames()
+    clients_nickname.append(client_nickname)
 
-    info_of_server = ("Сервер запущен на ip: 192.168.56.1, порту: {}".format(port))
+    info_of_server = (f"Сервер запущен на ip: 192.168.56.1, порту:{port}")
     Label(gui, text = info_of_server,bg = "gray6", fg = "orange red").place(relx = 0.01, rely =0.02 )
 
 
@@ -55,26 +59,9 @@ def gui_client():
 
     def send_ur_messages_to_you():
         line = pole_vvoda.get("1.0", END)
-        client_data.append(line)
-        index_history = len(client_data)
-        if index_history != 0:
-            with open("data/history.txt", "tw", encoding= "utf-8") as file:
-                file.write(f"{line}")
-            client_message = client_data[-1]
-            clients_message = f"{clients_nickname} :: {client_message}"
-            Thread(target= send_mes, args =(index_history,clients_message,)).start()
-        else:
-            pole_vvoda.delete("1.0", END)
-
-    def send_mes(int_of_send,message,):
-        otstupi = np.arange(0.03, 0.73, 0.04)
-        otstupi.tolist()
-
-        Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.03+otstupi[int_of_send]))
-        client.send(message.encode("utf-8"))
+        clients_message = f"{client_nickname} :: {line}"
+        client.send(clients_message.encode("utf-8"))
         pole_vvoda.delete("1.0", END)
-
-    Thread(target = send_ur_messages_to_you).start()
 
     Button(gui, command = send_ur_messages_to_you,text="Отправить", bg="orange red",
            width=30, height=6).place(relx=0.76, rely=0.82)
