@@ -36,7 +36,7 @@ def gui_server():
                     user.send(All_Data.encode("utf-8"))
 
     def on_closing():
-        if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет приостановлена"):
+        if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет преостановлена"):
             server.close()
             gui.destroy()
 

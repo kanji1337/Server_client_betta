@@ -40,7 +40,6 @@ def sled_okno():
 
 
     def data_get():
-        global username, password, email
         username = Username.get()
         password = Password.get()
         email = Email.get()
