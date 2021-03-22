@@ -3,6 +3,7 @@ from tkinter import*
 from threading import Thread
 import numpy as np
 from tkinter import messagebox as mess
+import time
 
 port = 4911
 client_data = []
@@ -58,8 +59,10 @@ def gui_client():
     pole_vvoda.place(relx = 0.03, rely = 0.85)
 
     def send_ur_messages_to_you():
+        ur_time = time.localtime()
+        accept_time = time.strftime("%H:%M:%S", ur_time)
         line = pole_vvoda.get("1.0", END)
-        clients_message = f"{client_nickname} :: {line}"
+        clients_message = f"[{accept_time}]  {client_nickname} ::  {line}"
         client.send(clients_message.encode("utf-8"))
         pole_vvoda.delete("1.0", END)
 

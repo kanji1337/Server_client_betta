@@ -3,6 +3,7 @@ from tkinter import*
 from threading import Thread
 import numpy as np
 from tkinter import messagebox as mess
+import time
 
 port = 4911
 server_addres = (socket.gethostbyname(socket.gethostname()), port)
@@ -30,7 +31,7 @@ def gui_server():
                 server_data.append(All_Data)
                 index = len(server_data)
                 for i in range(index):
-                    Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
+                    messages = Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
                             0.02 + otstupi[index]))
                 for user in users_sockets:
                     user.send(All_Data.encode("utf-8"))
@@ -54,7 +55,6 @@ def gui_server():
     info_of_server = ("Сервер запущен на ip: {}, порту: {}".format(*server_addres))
     Label(gui, text = info_of_server,bg = "gray6", fg = "orange red").place(relx = 0.01, rely =0.02 )
 
-
     LabelFrame(gui, text = "Отправлять от сюда", font = ("Times New Roman", "16"), highlightthickness=0,
                bg = "gray15", width = 1200, height = 200,).place(relx = 0, rely = 0.77)
     pole_vvoda = Text(gui, wrap = "word", bg = "snow", relief = "solid", width = 75, height = 2, font = ("Times New Roman", "16"))
@@ -69,17 +69,18 @@ def gui_server():
             with open("data/history.txt", "tw", encoding= "utf-8") as file:
                 file.write(f"{line}")
             server_message = server_data[-1]
-            clients_messages = ""
-            all_message = f"{server_nickname} :: {server_message}\n{clients_messages}"
+            ur_time = time.localtime()
+            accept_time = time.strftime("%H:%M:%S", ur_time)
+            all_message = f"[{accept_time}]  {server_nickname} ::  {server_message}"
             Thread(target= send_mes, args =(index_history,all_message,)).start()
         else:
             pole_vvoda.delete("1.0", END)
 
-    def send_mes(int_of_send,message,):                                           # преобразование массива numpy в list python
+    def send_mes(int_of_send,message,):
         for i in range(int_of_send):                                   # HARD brain make it long time ради этой строчки созданы предыдущие 15
-            Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.02+otstupi[int_of_send]))     # После получения строки, номер ее этерации через len(your_history) передается в функцию send_mes
-
-        for user in users_sockets:                                      # каждому сокету массива отправляется сообщение номер этерации поступает в функцию и создается новый Label опущенный на 0.03 вниз при помощи вызова массива по индексу этерации, вот зачем такой странный цикл
+            message_to_you = Label(gui, text = message, bg="gray6", fg="yellow").place(relx=0.02, rely=(0.02+otstupi[int_of_send]))     # После получения строки, номер ее этерации через len(server_data) передается в функцию send_mes
+                                                                                                                                        # каждому сокету массива отправляется сообщение номер этерации поступает в функцию и создается новый Label опущенный на 0.03 вниз при помощи вызова массива по индексу этерации, вот зачем такой странный цикл
+        for user in users_sockets:
             user.send(message.encode("utf-8"))
 
         pole_vvoda.delete("1.0", END)
