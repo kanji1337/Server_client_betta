@@ -19,9 +19,9 @@ def gui_client():
     def polzvtl():
         global client
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect(("192.168.56.1", port))
+        client.connect(("192.168.100.40", port))
         chat = True
-        info_about_you = f"К нам присоеденился новый участник {clients_nickname[-1]}"
+        info_about_you = f"К нам присоеденился новый участник {clients_nickname[-1]}" #35-(-1) никнейм
 
         while chat:
             data = client.recv(1024)

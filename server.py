@@ -9,6 +9,7 @@ port = 4911
 server_addres = (socket.gethostbyname(socket.gethostname()), port)
 users_sockets = []
 server_data = []
+clients_nicknames = []
 
 otstupi = np.arange(0.03, 0.68, 0.04)  # создание массива numpy, т.к python list не умеет создавать float массивы
 otstupi.tolist()
@@ -18,10 +19,27 @@ def gui_server():
     gui.geometry("1200x900")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((socket.gethostname(), port))
+
+    def update_list_of_users():
+        list_of_users = LabelFrame(gui, text = "Список пользователей онлайн", font = ("Times New Roman", "16"), fg = "orange red", bg = "gray15",
+                                width = 680, highlightthickness=0)
+        list_of_users.place(relx = 0.6, rely = 0.03)
+        your_id = Label(list_of_users, text = server_nickname, font = ("Times New Roman", "12"), bg = "gray15", fg = "yellow")
+        your_id.pack(side = TOP)
+        Label(list_of_users, text = "Это ты", font = ("Times New Roman", "13"), bg = "gray15", fg = "orange red").pack(side = TOP)
+        if len(clients_nicknames) == 1:
+            client_id = Label(list_of_users, text=clients_nicknames[-1], font=("Times New Roman", "12"), bg="gray15",
+                            fg="yellow")
+            your_id.pack(side=TOP)
+            Button(list_of_users, text="Отправить\nличное сообщение", font=("Times New Roman", "13"), bg="gray15", fg="orange red").pack(
+                side=TOP)
+
+    #главная функция
     def serv():
         server.listen(5)
         chat = True
         while chat:
+            update_list_of_users()
             user, addres = server.accept()                     # Где user, это socket пользователя
             user.send(f"Ты присоединился из {addres} ".encode("utf-8"))
             users_sockets.append(user)
@@ -31,13 +49,15 @@ def gui_server():
                 server_data.append(All_Data)
                 index = len(server_data)
                 for i in range(index):
-                    messages = Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
+                    Label(gui, text=All_Data, bg="gray6", fg="yellow").place(relx=0.02, rely=(
                             0.02 + otstupi[index]))
                 for user in users_sockets:
                     user.send(All_Data.encode("utf-8"))
+                if All_Data.startswith("К нам присоеденился новый участник"):
+                    clients_nicknames.append(All_Data[35:-1])
 
     def on_closing():
-        if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет преостановлена"):
+        if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет приостановлена"):
             server.close()
             gui.destroy()
 
@@ -59,7 +79,6 @@ def gui_server():
                bg = "gray15", width = 1200, height = 200,).place(relx = 0, rely = 0.77)
     pole_vvoda = Text(gui, wrap = "word", bg = "snow", relief = "solid", width = 75, height = 2, font = ("Times New Roman", "16"))
     pole_vvoda.place(relx = 0.03, rely = 0.85)
-
 
     def send_ur_messages_to_you():
         line = pole_vvoda.get("1.0", END)
