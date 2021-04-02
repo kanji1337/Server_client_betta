@@ -20,26 +20,20 @@ def gui_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((socket.gethostname(), port))
 
-    def update_list_of_users():
-        list_of_users = LabelFrame(gui, text = "Список пользователей онлайн", font = ("Times New Roman", "16"), fg = "orange red", bg = "gray15",
-                                width = 680, highlightthickness=0)
-        list_of_users.place(relx = 0.6, rely = 0.03)
-        your_id = Label(list_of_users, text = server_nickname, font = ("Times New Roman", "12"), bg = "gray15", fg = "yellow")
-        your_id.pack(side = TOP)
-        Label(list_of_users, text = "Это ты", font = ("Times New Roman", "13"), bg = "gray15", fg = "orange red").pack(side = TOP)
-        if len(clients_nicknames) == 1:
-            client_id = Label(list_of_users, text=clients_nicknames[-1], font=("Times New Roman", "12"), bg="gray15",
-                            fg="yellow")
-            your_id.pack(side=TOP)
-            Button(list_of_users, text="Отправить\nличное сообщение", font=("Times New Roman", "13"), bg="gray15", fg="orange red").pack(
-                side=TOP)
-
     #главная функция
     def serv():
         server.listen(5)
         chat = True
         while chat:
-            update_list_of_users()
+            list_of_users = LabelFrame(gui, text="Список пользователей онлайн", font=("Times New Roman", "16"),
+                                       fg="orange red", bg="gray15",
+                                       width=680, highlightthickness=0)
+            list_of_users.place(relx=0.75, rely=0.02)
+            your_id = Label(list_of_users, text=f"Никнейм: {server_nickname}", font=("Times New Roman", "12"), bg="gray15",
+                            fg="yellow")
+            your_id.pack(side=TOP)
+            Is_you = Label(list_of_users, text="Это ты", font=("Times New Roman", "13"), bg="gray15", fg="orange red")
+            Is_you.pack(side=TOP)
             user, addres = server.accept()                     # Где user, это socket пользователя
             user.send(f"Ты присоединился из {addres} ".encode("utf-8"))
             users_sockets.append(user)
@@ -55,6 +49,16 @@ def gui_server():
                     user.send(All_Data.encode("utf-8"))
                 if All_Data.startswith("К нам присоеденился новый участник"):
                     clients_nicknames.append(All_Data[35:-1])
+                if len(clients_nicknames) > 0:
+                    client_id = Label(list_of_users, text=f"Никнейм: {clients_nicknames[-1]}", font=("Times New Roman", "12"),
+                                      bg="gray15", fg="yellow")
+                    send_clients = Button(list_of_users,command = private_send_mes, text="Отправить\nличное сообщение", font=("Times New Roman", "13"),
+                           bg="gray15", fg="orange red")
+                    client_id.pack(side=TOP)
+                    send_clients.pack(side=TOP)
+                    clients_nicknames.pop()
+
+    Thread(target=serv).start()
 
     def on_closing():
         if mess.askokcancel("Закрыть", "Действительно закрыть, работа сервера будет приостановлена"):
@@ -104,11 +108,11 @@ def gui_server():
 
         pole_vvoda.delete("1.0", END)
 
+    def private_send_mes():
+        print(users_sockets[-1])
 
     Button(gui, command=send_ur_messages_to_you, text="Отправить", bg="orange red",
            width=30, height=6).place(relx=0.76, rely=0.82)
-
-    Thread(target=serv).start()
 
     gui.protocol("WM_DELETE_WINDOW", on_closing)
     gui.mainloop()

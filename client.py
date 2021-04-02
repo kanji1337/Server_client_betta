@@ -16,6 +16,20 @@ def gui_client():
     gui.geometry("1200x900")
     gui["bg"] = "gray6"
 
+    def update_list_of_users():
+        list_of_users = LabelFrame(gui, text = "Список пользователей онлайн", font = ("Times New Roman", "16"), fg = "orange red", bg = "gray15",
+                                width = 680, highlightthickness=0)
+        list_of_users.place(relx = 0.6, rely = 0.03)
+        your_id = Label(list_of_users, text = clients_nickname[-1], font = ("Times New Roman", "12"), bg = "gray15", fg = "yellow")
+        your_id.pack(side = TOP)
+        Label(list_of_users, text = "Это ты", font = ("Times New Roman", "13"), bg = "gray15", fg = "orange red").pack(side = TOP)
+        if len(clients_nicknames) == 1:
+            client_id = Label(list_of_users, text=clients_nicknames[-1], font=("Times New Roman", "12"), bg="gray15",
+                            fg="yellow")
+            your_id.pack(side=TOP)
+            Button(list_of_users, text="Отправить\nличное сообщение", font=("Times New Roman", "13"), bg="gray15", fg="orange red").pack(
+                side=TOP)
+
     def polzvtl():
         global client
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
