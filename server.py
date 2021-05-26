@@ -8,11 +8,12 @@ import time
 port = 4911
 server_addres = (socket.gethostbyname(socket.gethostname()), port)
 users_sockets = []
-server_data = []
 clients_nicknames = []
-
-otstupi = np.arange(0.03, 0.68, 0.04)  # создание массива numpy, т.к python list не умеет создавать float массивы
-otstupi.tolist()
+server_data = []
+dict_of_user = {}
+otstupi = np.arange(0.03, 0.68, 0.04)  # создание массива numpy, т.к python arrange не умеет создавать float массивы
+otstupi.tolist()                       # преобразование numpy массива к list
+quick_clients_nicknames = []
 
 def gui_server():
     gui = Tk()
@@ -25,6 +26,7 @@ def gui_server():
         server.listen(5)
         chat = True
         while chat:
+
             list_of_users = LabelFrame(gui, text="Список пользователей онлайн", font=("Times New Roman", "16"),
                                        fg="orange red", bg="gray15",
                                        width=680, highlightthickness=0)
@@ -34,9 +36,11 @@ def gui_server():
             your_id.pack(side=TOP)
             Is_you = Label(list_of_users, text="Это ты", font=("Times New Roman", "13"), bg="gray15", fg="orange red")
             Is_you.pack(side=TOP)
+
             user, addres = server.accept()                     # Где user, это socket пользователя
             user.send(f"Ты присоединился из {addres} ".encode("utf-8"))
             users_sockets.append(user)
+
             while chat:
                 data = user.recv(1024)
                 All_Data = data.decode("utf-8")
@@ -47,16 +51,22 @@ def gui_server():
                             0.02 + otstupi[index]))
                 for user in users_sockets:
                     user.send(All_Data.encode("utf-8"))
-                if All_Data.startswith("К нам присоеденился новый участник"):
-                    clients_nicknames.append(All_Data[35:-1])
-                if len(clients_nicknames) > 0:
-                    client_id = Label(list_of_users, text=f"Никнейм: {clients_nicknames[-1]}", font=("Times New Roman", "12"),
+                if All_Data.startswith("К нам присоединился новый участник"):
+                    user_nickname = All_Data[35:-1]
+                    for first_nickname in clients_nicknames:
+                        if user_nickname != first_nickname:
+                            clients_nicknames.append(user_nickname)
+                    quick_clients_nicknames.append(user_nickname)
+                    dict_of_user[user_nickname] = user
+                if len(quick_clients_nicknames) > 0:
+                    client_id = Label(list_of_users, text=f"Никнейм: {quick_clients_nicknames[-1]}", font=("Times New Roman", "12"),
                                       bg="gray15", fg="yellow")
-                    send_clients = Button(list_of_users,command = private_send_mes, text="Отправить\nличное сообщение", font=("Times New Roman", "13"),
+                    send_clients = Button(list_of_users,command = private_send_mes, text="Отправить\nличное сообщение", font=("Times New Roman", "14"),
                            bg="gray15", fg="orange red")
                     client_id.pack(side=TOP)
                     send_clients.pack(side=TOP)
-                    clients_nicknames.pop()
+                    quick_clients_nicknames.pop()
+                print(dict_of_user)
 
     Thread(target=serv).start()
 
@@ -75,7 +85,8 @@ def gui_server():
         return nickname
 
     server_nickname = add_users_nicknames()
-
+    Label(gui, text= "Чтобы отправить приватное сообщение, требуется перед сообщением\n указать /PM:никнейм пользователя и отправить через список пользователей",
+          bg = "gray6", fg = "orange red").place(relx = 0.3, rely =0.02)
     info_of_server = ("Сервер запущен на ip: {}, порту: {}".format(*server_addres))
     Label(gui, text = info_of_server,bg = "gray6", fg = "orange red").place(relx = 0.01, rely =0.02 )
 
@@ -89,12 +100,11 @@ def gui_server():
         server_data.append(line)
         index_history = len(server_data)
         if index_history != 0:
-            with open("data/history.txt", "tw", encoding= "utf-8") as file:
+            with open("data/history.txt", "w", encoding= "utf-8") as file:
                 file.write(f"{line}")
-            server_message = server_data[-1]
             ur_time = time.localtime()
             accept_time = time.strftime("%H:%M:%S", ur_time)
-            all_message = f"[{accept_time}]  {server_nickname} ::  {server_message}"
+            all_message = f"[{accept_time}]  {server_nickname} ::  {line}"
             Thread(target= send_mes, args =(index_history,all_message,)).start()
         else:
             pole_vvoda.delete("1.0", END)
@@ -109,7 +119,13 @@ def gui_server():
         pole_vvoda.delete("1.0", END)
 
     def private_send_mes():
-        print(users_sockets[-1])
+        private_mes = pole_vvoda.get("1.0", END)
+        for key in dict_of_user.keys():
+            print(key)
+            if f"/PM:{key}" in private_mes:
+                private_socket = dict_of_user[key]
+                private_socket.send(f"Личное сообщение от {private_mes[4:]}".encode("utf-8"))
+        pole_vvoda.delete("1.0", END)
 
     Button(gui, command=send_ur_messages_to_you, text="Отправить", bg="orange red",
            width=30, height=6).place(relx=0.76, rely=0.82)
